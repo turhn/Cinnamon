@@ -1,3 +1,65 @@
+cinnamon (2.4.5) rebecca; urgency=medium
+
+  * Fixed startup animation
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 26 Nov 2014 22:21:25 +0100
+
+cinnamon (2.4.4) rebecca; urgency=medium
+
+  * Xlets: silently ignore uninstalled items
+  * Theme: Fixed Expo trash-icon not fitting in button
+  * Fixed: settings/backgrounds Gradient and Picture Aspect text not aligned on the left side
+  * Point the onscreen keyboard to the proper gsettings key
+  * Settings/Default: Added a bit more height
+  * Settings/Account Details: Fixed button not showing any icon when user has no "face" picture
+  * Menu applet: Fixed "recent" label making menu too wide
+  * Systray applet: Fixed icons getting resized to 20px..
+  * Users and Groups admin tool: Don't allow root to modify the password for user whose home dir is encrypted
+  * Menu applet: don't show recent if it's disabled in privacy settings
+  * Fixes applet name in 'About' modal
+  * cinnamon-settings: Fixed spices progress window becoming corrupted after refreshing themes.  Allow each xlet page to own its own GtkBuilder for generating the refresh dialog.
+  * Fixed 2d session requirements
+  * Prevent cinnamon crash when an invalid gsettings schema is used. Many thanks and all credit to @lestscape (#3692)
+  * Revert "[window list applet] Fix attention visibility on mouse hover" ~ possible cause of temporary DE freezes
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 23 Nov 2014 14:55:09 +0100
+
+cinnamon (2.4.3) rebecca; urgency=medium
+
+  * Small l10n fixes, refreshed desktop files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 13 Nov 2014 13:56:14 +0100
+
+cinnamon (2.4.2) rebecca; urgency=medium
+
+  * photoframe desklet: fix mega leak, don't cache all images, destroy old images.
+  * photoframe desklet: cancel the update timer when removing the desklet.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 10 Nov 2014 11:00:28 +0100
+
+cinnamon (2.4.1) rebecca; urgency=medium
+
+  * Sound Applet: use Math.round instead of .floor on volume values and better mute handling
+  * Sound Applet: play sound "volume" on scroll event of the sliders
+  * Sound Applet: scrollevent on the icon: 0% -> 5% instead of 0% -> 10%
+  * Notifications applet: Don't show empty tray by default
+  * Utils: added a string latinise function Menu Applet: applied this new latinise function to sort the applications
+  * keybindings: change signal name to listen for media key changes.
+  * Cinnamon Settings, extension-core: l10n fix for Highlight and Remove buttons
+  * l10n fixes for Menu Editor
+  * l10n fix in Cinnamon Settings
+  * Cinnamon Settings: Give MDM the same label as present in mdmsetup.desktop
+  * Hide root terminal from terminal selection list as it doesn't work
+  * menu applet: recognize symbolic icon file paths for the applet icon
+  * power applet: make applet label configurable when plugged in, improve logic a bit when deciding what to show.
+  * power applet: prevent device refresh before proxy is acquired (caused by panel height change callback which is called when the applet is loaded, but sometimes before the async acquisition of _proxy is completed.)
+  * Use system proxy settings in cinnamon-settings
+  * Settings, backgrounds: Sort system collections, special-case Linux Mint (composed name) and Retro collections - icons/display_name
+  * Add settings for cinnamon-session timer
+  * re-add deprecated keybinding schema to allow migration script to work
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 08 Nov 2014 10:13:36 +0100
+
 cinnamon (2.4.0) rebecca; urgency=medium
 
   * 2.4.0

@@ -17,6 +17,8 @@ try:
     import grp
     import pwd
     import locale
+    import urllib2
+    import proxygsettings
     from functools import cmp_to_key
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
@@ -74,8 +76,8 @@ STANDALONE_MODULES = [
     [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       _("printers, laser, inkjet")],    
     [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          _("firewall, block, filter, programs")],
     [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          _("language, install, foreign")],
-    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "cinnamon-session-properties",  "cs-startup-programs","prefs",          _("startup, programs, boot, init, session")],
+    [_("Login Window"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Startup Applications"),          "cinnamon-session-properties",  "cs-startup-programs","prefs",          _("startup, programs, boot, init, session")],
     [_("Driver Manager"),                "mintdrivers",                  "cs-drivers",         "admin",          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          _("ppa, repository, package, source, download")],
     [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          _("user, users, account, accounts, group, groups, password")]
@@ -499,7 +501,7 @@ class MainWindow:
 
     def setParentRefs (self, mod):
         try:
-            mod._setParentRef(self.window, self.builder)
+            mod._setParentRef(self.window)
         except AttributeError:
             pass
         return True
@@ -532,7 +534,14 @@ class MainWindow:
 
 if __name__ == "__main__":
     import signal
+    
+    ps = proxygsettings.get_proxy_settings()
+    if ps:
+        proxy = urllib2.ProxyHandler(ps)
+    else:
+        proxy = urllib2.ProxyHandler()
+    urllib2.install_opener(urllib2.build_opener(proxy))
+    
     window = MainWindow()
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()
-

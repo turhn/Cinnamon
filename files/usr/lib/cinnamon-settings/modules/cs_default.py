@@ -145,7 +145,7 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
             icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
             #terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if (cat_val is not None and "TerminalEmulator" in cat_val):
-                if (exec_val is not None and name_val is not None and icon_val is not None):
+                if (exec_val is not None and name_val is not None and icon_val is not None and not "gksu" in exec_val):
                     self.append_custom_item(exec_val, name_val, Gio.ThemedIcon.new(icon_val))
                     self.active_items.append(exec_val)
                     if (self.key_value == exec_val):
@@ -342,7 +342,7 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
-        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 350, module=self)
+        sidePage = SidePage(_("Preferred Applications"), "cs-default-applications", keywords, content_box, 370, module=self)
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
@@ -382,7 +382,7 @@ class Module:
         for d in preferred_app_defs:
             table.addRow(d[PREF_LABEL], DefaultAppChooserButton(d[PREF_CONTENT_TYPE], d[PREF_GEN_CONTENT_TYPE]))
                 
-        table.addRow(_("Terminal"), DefaultTerminalButton())
+        table.addRow(_("Te_rminal"), DefaultTerminalButton())
 
         return ColumnBox(_("Select your preferred applications"), table)
 

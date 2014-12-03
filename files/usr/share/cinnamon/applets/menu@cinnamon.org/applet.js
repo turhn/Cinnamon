@@ -634,6 +634,8 @@ GenericButton.prototype = {
         this.button_name = "";
 
         this.label = new St.Label({ text: label, style_class: 'menu-application-button-label' });
+        this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END; 
+        this.label.set_style(MAX_BUTTON_WIDTH);
 
         if (icon != null) {
             let icon_actor = new St.Icon({ icon_name: icon, icon_type: St.IconType.FULLCOLOR, icon_size: APPLICATION_ICON_SIZE});
@@ -1025,7 +1027,6 @@ MyApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.IN, "show-recent", "showRecent", this._refreshPlacesAndRecent, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "show-places", "showPlaces", this._refreshPlacesAndRecent, null);
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "activate-on-hover", "activateOnHover", this._updateActivateOnHover, null);
@@ -1227,10 +1228,13 @@ MyApplet.prototype = {
         try {
             if (this.menuIconCustom &&
                (this.menuIcon == "" ||
-               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS))))
+               (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))) {
+                if (this.menuIcon.search("-symbolic") != -1)
+                    this.set_applet_icon_symbolic_path(this.menuIcon);
+                else
                     this.set_applet_icon_path(this.menuIcon);
-            else if (this.menuIconCustom &&
-                     Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
+            } else if (this.menuIconCustom &&
+                       Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
                 if (this.menuIcon.search("-symbolic") != -1)
                     this.set_applet_icon_symbolic_name(this.menuIcon);
                 else
@@ -1616,7 +1620,7 @@ MyApplet.prototype = {
             }
         }
         // Now generate recent category and recent files buttons and add to the list
-        if (this.showRecent) {
+        if (this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
             this.recentButton = new RecentCategoryButton();
             this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
@@ -1662,24 +1666,28 @@ MyApplet.prototype = {
             }));
             this.categoriesBox.add_actor(this.recentButton.actor);
             this._categoryButtons.push(this.recentButton);
+            
+            if (this.RecentManager._infosByTimestamp.length > 0) {
+                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                    let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
+                    this._addEnterEvent(button, Lang.bind(this, function() {
+                            this._clearPrevSelection(button.actor);
+                            button.actor.style_class = "menu-application-button-selected";
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
+                            }));
+                    button.actor.connect('leave-event', Lang.bind(this, function() {
+                            button.actor.style_class = "menu-application-button";
+                            this._previousSelectedActor = button.actor;
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text("");
+                            }));
+                    this._recentButtons.push(button);
+                    this.applicationsBox.add_actor(button.actor);
+                    this.applicationsBox.add_actor(button.menu.actor);
+                }
 
-            if (!this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
-                let button = new GenericButton(_("Recent file tracking is currently disabled system-wide."), null, false, null);
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevSelection(button.actor);
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        this._previousSelectedActor = button.actor;
-                        }));
-
-                button = new GenericButton(_("Click here to enable"), "ok", true, Lang.bind(this, function () {
-                    this.menu.close()
-                    this.privacy_settings.set_boolean(REMEMBER_RECENT_KEY, true);
-                }));
-
+                let button = new RecentClearButton(this);
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
@@ -1688,47 +1696,14 @@ MyApplet.prototype = {
                         button.actor.style_class = "menu-application-button";
                         this._previousSelectedActor = button.actor;
                         }));
-
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             } else {
-                if (this.RecentManager._infosByTimestamp.length > 0) {
-                    for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                        let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                        this._addEnterEvent(button, Lang.bind(this, function() {
-                                this._clearPrevSelection(button.actor);
-                                button.actor.style_class = "menu-application-button-selected";
-                                this.selectedAppTitle.set_text("");
-                                this.selectedAppDescription.set_text(button.file.uri.slice(7).replace(/%20/g, ' '));
-                                }));
-                        button.actor.connect('leave-event', Lang.bind(this, function() {
-                                button.actor.style_class = "menu-application-button";
-                                this._previousSelectedActor = button.actor;
-                                this.selectedAppTitle.set_text("");
-                                this.selectedAppDescription.set_text("");
-                                }));
-                        this._recentButtons.push(button);
-                        this.applicationsBox.add_actor(button.actor);
-                        this.applicationsBox.add_actor(button.menu.actor);
-                    }
-
-                    let button = new RecentClearButton(this);
-                    this._addEnterEvent(button, Lang.bind(this, function() {
-                            this._clearPrevSelection(button.actor);
-                            button.actor.style_class = "menu-application-button-selected";
-                            }));
-                    button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
-                            this._previousSelectedActor = button.actor;
-                            }));
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                } else {
-                    let button = new GenericButton(_("No recent documents"), null, false, null);
-                    this._recentButtons.push(button);
-                    this.applicationsBox.add_actor(button.actor);
-                }
+                let button = new GenericButton(_("No recent documents"), null, false, null);
+                this._recentButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
             }
+            
         }
 
         this._setCategoriesButtonActive(!this.searchActive);
@@ -1868,8 +1843,9 @@ MyApplet.prototype = {
         }
         // Sort apps and add to applicationsBox
         this._applicationsButtons.sort(function(a, b) {
-            let sr = a.app.get_name().toLowerCase() > b.app.get_name().toLowerCase();
-            return sr;
+            a = Util.latinise(a.app.get_name().toLowerCase());
+            b = Util.latinise(b.app.get_name().toLowerCase());
+            return a > b;
         });
 
         for (let i = 0; i < this._applicationsButtons.length; i++) {
